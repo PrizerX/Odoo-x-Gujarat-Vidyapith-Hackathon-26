@@ -5,4 +5,4 @@ Project submission for Odoo x Gujarat Vidyapith Hackathon '26
 
 ### Priyansh Verma - `Readyy!!`
 ### Piyush Verma - `Ready!`
-### Trishansh Verma - `Pending`
+### Trishansh Verma - `Ready!!!`

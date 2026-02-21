@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Truck, Users, Navigation, DollarSign, AlertTriangle, TrendingUp, Clock, CheckCircle, RefreshCw } from 'lucide-react';
+import { Truck, Users, Navigation, DollarSign, AlertTriangle, TrendingUp, Clock, CheckCircle, RefreshCw, Download } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { getVehicles } from '@/lib/vehicles';
 import { getDrivers, checkLicenseStatus } from '@/lib/drivers';
@@ -16,6 +16,7 @@ import { format } from 'date-fns';
  */
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [stats, setStats] = useState({
     totalVehicles: 0,
     availableVehicles: 0,
@@ -31,7 +32,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadDashboardData();
+    // Check if PWA install prompt is available
+    const checkInstallPrompt = () => {
+      const isInstallable = (window as any).showInstallPrompt !== undefined;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+      setShowInstallPrompt(isInstallable && !isStandalone);
+    };
+    
+    // Check immediately and after a short delay
+    setTimeout(checkInstallPrompt, 1000);
 
+    // 
     // Refresh dashboard every 30 seconds
     const refreshInterval = setInterval(() => {
       loadDashboardData();
@@ -192,22 +203,38 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="p-6">
-        <div className="mb-8 flex items-start justify-between">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Command Center</h1>
-            <p className="text-gray-600 mt-2">
-              Fleet operations overview and real-time insights
-            </p>
+            <p className="text-gray-600 mt-1">Fleet overview and key metrics</p>
           </div>
-          <button
-            onClick={() => loadDashboardData()}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
-            title="Refresh dashboard data"
-          >
-            <RefreshCw className={`w-4 h-4 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
-            <span className="text-sm font-medium text-gray-700">Refresh</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {showInstallPrompt && (
+              <button
+                onClick={() => {
+                  if ((window as any).showInstallPrompt) {
+                    (window as any).showInstallPrompt();
+                    setShowInstallPrompt(false);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#714b67' }}
+                title="Install FleetFlow as an app"
+              >
+                <Download className="w-4 h-4" />
+                <span className="text-sm">Install App</span>
+              </button>
+            )}
+            <button
+              onClick={() => loadDashboardData()}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              title="Refresh dashboard data"
+            >
+              <RefreshCw className={`w-4 h-4 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm font-medium text-gray-700">Refresh</span>
+            </button>
+          </div>
         </div>
 
         {loading ? (

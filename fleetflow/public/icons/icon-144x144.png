@@ -1,0 +1,33 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="115" fill="#714b67"/>
+  
+  <!-- Truck Icon -->
+  <g transform="translate(96, 128)">
+    <!-- Truck Body -->
+    <rect x="40" y="80" width="200" height="120" rx="12" fill="white"/>
+    
+    <!-- Truck Cab -->
+    <rect x="240" y="100" width="100" height="100" rx="12" fill="white"/>
+    
+    <!-- Truck Roof -->
+    <path d="M 240 100 L 280 60 L 340 60 L 340 100 Z" fill="#f3f4f6"/>
+    
+    <!-- Windows -->
+    <rect x="255" y="115" width="35" height="35" rx="4" fill="#714b67" opacity="0.3"/>
+    <rect x="295" y="115" width="35" height="35" rx="4" fill="#714b67" opacity="0.3"/>
+    
+    <!-- Wheels -->
+    <circle cx="100" cy="220" r="30" fill="#333"/>
+    <circle cx="100" cy="220" r="15" fill="#666"/>
+    <circle cx="280" cy="220" r="30" fill="#333"/>
+    <circle cx="280" cy="220" r="15" fill="#666"/>
+    
+    <!-- Door Lines -->
+    <line x1="140" y1="85" x2="140" y2="195" stroke="#714b67" stroke-width="3" opacity="0.3"/>
+    
+    <!-- Logo Badge -->
+    <rect x="150" y="120" width="60" height="40" rx="8" fill="#714b67"/>
+    <text x="180" y="145" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">FF</text>
+  </g>
+</svg>

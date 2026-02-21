@@ -11,6 +11,8 @@ export interface Trip {
   status: string;
   origin: string;
   destination: string;
+  distance: number;
+  revenue: number;
   created_at: string;
   vehicle_registration?: string;
   vehicle_type?: string;
@@ -27,6 +29,8 @@ export interface TripInput {
   status: string;
   origin: string;
   destination: string;
+  distance?: number;
+  revenue?: number;
 }
 
 /**
@@ -132,7 +136,7 @@ export async function validateTripAssignment(
   if (!driverValidation.canAssign) {
     return {
       valid: false,
-      message: driverValidation.message
+      message: driverValidation.reason || 'Driver cannot be assigned'
     };
   }
 
@@ -176,8 +180,8 @@ export async function createTrip(
 
     // Create the trip
     const result = await db.query(
-      `INSERT INTO trips (vehicle_id, driver_id, cargo_weight, start_date, end_date, status, origin, destination)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO trips (vehicle_id, driver_id, cargo_weight, start_date, end_date, status, origin, destination, distance, revenue)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id`,
       [
         tripData.vehicle_id,
@@ -187,11 +191,13 @@ export async function createTrip(
         tripData.end_date || null,
         tripData.status || 'Pending',
         tripData.origin,
-        tripData.destination
+        tripData.destination,
+        tripData.distance || 0,
+        tripData.revenue || 0
       ]
     );
 
-    const tripId = result.rows[0].id;
+    const tripId = (result.rows[0] as any).id;
 
     // Update vehicle status to 'On Trip'
     await db.query(
@@ -278,6 +284,14 @@ export async function updateTrip(
     if (tripData.destination !== undefined) {
       updates.push(`destination = $${paramIndex++}`);
       values.push(tripData.destination);
+    }
+    if (tripData.distance !== undefined) {
+      updates.push(`distance = $${paramIndex++}`);
+      values.push(tripData.distance);
+    }
+    if (tripData.revenue !== undefined) {
+      updates.push(`revenue = $${paramIndex++}`);
+      values.push(tripData.revenue);
     }
 
     if (updates.length === 0) {

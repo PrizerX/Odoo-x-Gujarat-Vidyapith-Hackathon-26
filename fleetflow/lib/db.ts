@@ -66,6 +66,14 @@ export async function getDB(): Promise<PGlite> {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+  
+  // Add distance and revenue columns if they don't exist (for existing databases)
+  try {
+    await db.exec(`ALTER TABLE trips ADD COLUMN IF NOT EXISTS distance DECIMAL(10, 2) DEFAULT 0;`);
+    await db.exec(`ALTER TABLE trips ADD COLUMN IF NOT EXISTS revenue DECIMAL(10, 2) DEFAULT 0;`);
+  } catch (e) {
+    // Columns might already exist
+  }
 
   // Create Expenses table for fuel and maintenance tracking
   await db.exec(`

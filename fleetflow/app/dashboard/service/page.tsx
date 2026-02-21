@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, Wrench, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Wrench, Clock, CheckCircle, Download, AlertTriangle } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import ServiceModal from '@/components/ServiceModal';
 import { getServiceLogs, deleteServiceLog, type ServiceLog } from '@/lib/service-log';
+import { exportServiceLogsCSV } from '@/lib/export';
 import { format } from 'date-fns';
 
 /**
@@ -116,14 +117,24 @@ export default function ServicePage() {
             <h1 className="text-3xl font-bold text-gray-900">Service Log</h1>
             <p className="text-gray-600 mt-1">Track vehicle maintenance and repairs</p>
           </div>
-          <button
-            onClick={handleAddNew}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors"
-            style={{ backgroundColor: '#714b67' }}
-          >
-            <Plus className="w-5 h-5" />
-            Log Service
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => exportServiceLogsCSV(filteredLogs)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              title="Export to CSV"
+            >
+              <Download className="w-5 h-5 text-gray-600" />
+              <span className="text-gray-700 font-medium">Export</span>
+            </button>
+            <button
+              onClick={handleAddNew}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors"
+              style={{ backgroundColor: '#714b67' }}
+            >
+              <Plus className="w-5 h-5" />
+              Log Service
+            </button>
+          </div>
         </div>
 
         {/* Info Banner */}

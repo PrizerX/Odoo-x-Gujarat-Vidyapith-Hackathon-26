@@ -136,7 +136,7 @@ export async function validateTripAssignment(
   if (!driverValidation.canAssign) {
     return {
       valid: false,
-      message: driverValidation.reason || 'Driver cannot be assigned'
+      message: driverValidation.reason || 'Driver validation failed'
     };
   }
 
@@ -197,7 +197,7 @@ export async function createTrip(
       ]
     );
 
-    const tripId = (result.rows[0] as any).id;
+    const tripId = (result.rows as any[])[0].id;
 
     // Update vehicle status to 'On Trip'
     await db.query(

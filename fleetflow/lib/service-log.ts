@@ -105,7 +105,7 @@ export async function createServiceLog(
       ]
     );
 
-    const logId = (result.rows[0] as any).id;
+    const logId = result.rows[0].id;
 
     // STRICT BUSINESS RULE: Set vehicle status to 'In Shop'
     // This automatically removes it from the dispatcher's available pool
@@ -306,8 +306,8 @@ export async function getServiceLogsByVehicle(vehicleId: number): Promise<Servic
     WHERE sl.vehicle_id = $1
     ORDER BY sl.date DESC
   `, [vehicleId]);
-
-  return result.rows as any[] as ServiceLog[];
+  
+  return result.rows as ServiceLog[];
 }
 
 /**
@@ -321,5 +321,5 @@ export async function getActiveServiceCount(): Promise<number> {
      FROM service_log 
      WHERE status = 'In Progress'`
   );
-  return parseInt((result.rows[0] as any).count) || 0;
+  return parseInt(result.rows[0].count);
 }

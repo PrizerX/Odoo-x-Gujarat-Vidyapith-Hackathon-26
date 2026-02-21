@@ -61,8 +61,6 @@ export async function getDB(): Promise<PGlite> {
       status VARCHAR(50) DEFAULT 'Pending',
       origin VARCHAR(255),
       destination VARCHAR(255),
-      distance DECIMAL(10, 2) DEFAULT 0,
-      revenue DECIMAL(10, 2) DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);

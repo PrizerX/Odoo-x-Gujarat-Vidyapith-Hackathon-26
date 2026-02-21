@@ -99,7 +99,7 @@ export default function ServiceModal({ log, onClose, onSave, mode = 'create' }: 
       
       if (mode === 'resolve' && log) {
         // Resolve the service log
-        result = await resolveServiceLog(log.id, formData.resolution || '');
+        result = await resolveServiceLog(log.id, formData.resolution);
       } else if (log && mode === 'edit') {
         // Update existing log
         result = await updateServiceLog(log.id, formData);

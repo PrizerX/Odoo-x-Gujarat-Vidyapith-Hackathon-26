@@ -27,8 +27,6 @@ export default function TripModal({ trip, onClose, onSave }: TripModalProps) {
     status: 'Pending',
     origin: '',
     destination: '',
-    distance: 0,
-    revenue: 0,
   });
   const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
   const [availableDrivers, setAvailableDrivers] = useState<Driver[]>([]);
@@ -51,8 +49,6 @@ export default function TripModal({ trip, onClose, onSave }: TripModalProps) {
         status: trip.status,
         origin: trip.origin,
         destination: trip.destination,
-        distance: trip.distance || 0,
-        revenue: trip.revenue || 0,
       });
     }
   }, [trip]);
@@ -77,7 +73,7 @@ export default function TripModal({ trip, onClose, onSave }: TripModalProps) {
       const vehicle = availableVehicles.find(v => v.id === vehicleId);
       setSelectedVehicle(vehicle || null);
       setFormData({ ...formData, [name]: vehicleId });
-    } else if (name === 'cargo_weight' || name === 'distance' || name === 'revenue') {
+    } else if (name === 'cargo_weight') {
       setFormData({ ...formData, [name]: parseFloat(value) || 0 });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -300,44 +296,6 @@ export default function TripModal({ trip, onClose, onSave }: TripModalProps) {
                 onChange={handleChange}
                 required
                 placeholder="e.g., Delhi"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
-              />
-            </div>
-          </div>
-
-          {/* Distance and Revenue */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="distance" className="block text-sm font-medium text-gray-700 mb-1">
-                Distance (km)
-              </label>
-              <input
-                type="number"
-                id="distance"
-                name="distance"
-                value={formData.distance || ''}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="e.g., 450.5"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
-              />
-            </div>
-            <div>
-              <label htmlFor="revenue" className="block text-sm font-medium text-gray-700 mb-1">
-                Revenue ($)
-              </label>
-              <input
-                type="number"
-                id="revenue"
-                name="revenue"
-                value={formData.revenue || ''}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="e.g., 2500.00"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
                 style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
               />

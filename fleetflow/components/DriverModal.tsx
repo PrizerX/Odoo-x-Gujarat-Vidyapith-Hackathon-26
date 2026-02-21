@@ -27,10 +27,15 @@ export default function DriverModal({ driver, onClose, onSave }: DriverModalProp
 
   useEffect(() => {
     if (driver) {
+      // Handle license_expiry which could be a Date object or string
+      const expiryDate = typeof driver.license_expiry === 'string' 
+        ? driver.license_expiry.split('T')[0]
+        : new Date(driver.license_expiry).toISOString().split('T')[0];
+      
       setFormData({
         name: driver.name,
         license_number: driver.license_number,
-        license_expiry: driver.license_expiry.split('T')[0], // Format for date input
+        license_expiry: expiryDate,
         status: driver.status,
       });
     }

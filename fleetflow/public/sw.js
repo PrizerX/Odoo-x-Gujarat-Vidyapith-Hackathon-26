@@ -126,7 +126,8 @@ async function staleWhileRevalidate(request) {
   const cached = await cache.match(request);
 
   const fetchPromise = fetch(request).then((response) => {
-    if (response.ok) {
+    // Only cache GET requests (Cache API doesn't support POST)
+    if (response.ok && request.method === 'GET') {
       cache.put(request, response.clone());
     }
     return response;

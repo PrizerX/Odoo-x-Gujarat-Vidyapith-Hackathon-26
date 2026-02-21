@@ -1,133 +1,93 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getSession, clearSession } from '@/lib/auth';
-import { Truck, LogOut } from 'lucide-react';
+import DashboardLayout from '@/components/DashboardLayout';
 import Link from 'next/link';
+import { Truck, Users, Navigation, TrendingUp } from 'lucide-react';
 
 /**
- * Dashboard Page Component
- * Protected route that displays after successful authentication.
- * Shows user info and provides navigation to main features.
+ * Dashboard Home Page
+ * Command center showing key metrics and quick actions.
  */
 export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const stats = [
+    { name: 'Total Vehicles', value: '0', icon: Truck, color: '#714b67' },
+    { name: 'Active Drivers', value: '0', icon: Users, color: '#3b82f6' },
+    { name: 'Ongoing Trips', value: '0', icon: Navigation, color: '#10b981' },
+    { name: 'Total Revenue', value: '$0', icon: TrendingUp, color: '#f59e0b' },
+  ];
 
-  useEffect(() => {
-    const session = getSession();
-    if (!session) {
-      router.push('/login');
-    } else {
-      setUser(session);
-      setLoading(false);
-    }
-  }, [router]);
-
-  const handleLogout = () => {
-    clearSession();
-    router.push('/');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#714b67' }}>
-            <Truck className="w-6 h-6 text-white animate-pulse" />
-          </div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const quickActions = [
+    { name: 'Add Vehicle', href: '/dashboard/vehicles', color: '#714b67' },
+    { name: 'Add Driver', href: '/dashboard/drivers', color: '#3b82f6' },
+    { name: 'Create Trip', href: '/dashboard/trips', color: '#10b981' },
+    { name: 'View Analytics', href: '/dashboard/analytics', color: '#f59e0b' },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#714b67' }}>
-                <Truck className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold" style={{ color: '#714b67' }}>
-                FleetFlow
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm">
-                <p className="font-medium text-gray-900">{user?.name}</p>
-                <p className="text-gray-500 text-xs">{user?.email}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <DashboardLayout>
+      <div className="p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.name}!
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-2">
-            Manage your fleet operations from this command center.
+            Welcome to your fleet management command center
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="w-16 h-16 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#714b67' }}>
-            <Truck className="w-8 h-8 text-white" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Dashboard Coming Soon
-          </h2>
-          <p className="text-gray-600 mb-6">
-            The full dashboard with vehicle registry, driver management, trip dispatcher, and analytics will be available shortly.
-          </p>
-          <div className="inline-flex gap-2 text-sm">
-            <span className="status-pill status-available">System Ready</span>
-            <span className="status-pill status-on-trip">Database Connected</span>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.name} className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  </div>
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: stat.color }}
+                  >
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action) => (
+              <Link
+                key={action.name}
+                href={action.href}
+                className="flex flex-col items-center justify-center p-6 rounded-lg border-2 border-gray-200 hover:border-gray-300 transition-colors"
+              >
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center mb-3"
+                  style={{ backgroundColor: action.color }}
+                >
+                  <span className="text-2xl text-white">+</span>
+                </div>
+                <span className="text-sm font-medium text-gray-700">{action.name}</span>
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Feature Preview */}
-        <div className="grid md:grid-cols-2 gap-6 mt-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-bold mb-2" style={{ color: '#714b67' }}>
-              🚗 Coming Next
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Vehicle Registry with status tracking</li>
-              <li>• Driver Profiles with compliance checks</li>
-              <li>• Trip Dispatcher with validation</li>
-              <li>• Service Log management</li>
-            </ul>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-bold mb-2" style={{ color: '#714b67' }}>
-              📊 Analytics Ready
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>• Fuel efficiency calculations</li>
-              <li>• Vehicle ROI tracking</li>
-              <li>• Expense monitoring</li>
-              <li>• Performance metrics</li>
-            </ul>
+        {/* Recent Activity Placeholder */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+          <div className="text-center py-12">
+            <Truck className="w-16 h-16 mx-auto mb-4" style={{ color: '#714b67' }} />
+            <p className="text-gray-600">No recent activity yet</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Start by adding vehicles and drivers to your fleet
+            </p>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

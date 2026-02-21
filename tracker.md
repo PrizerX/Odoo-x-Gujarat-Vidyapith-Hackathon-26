@@ -56,6 +56,93 @@ FleetFlow is an offline-first logistics ERP system that replaces manual logbooks
 
 ---
 
+### Session 2 - February 21, 2026
+
+#### 🏗️ Phase 2: Asset & Human Registry - Vehicle Registry
+**Time:** Continuation  
+**Status:** Completed  
+
+**Tasks Completed:**
+- ✅ Fixed landing page button text ("Start Free Trial" → "Get Started")
+- ✅ Created DashboardLayout component with responsive sidebar navigation
+- ✅ Built comprehensive dashboard home page with stats and quick actions
+- ✅ Implemented Vehicle Registry page with full CRUD functionality
+- ✅ Created VehicleModal component for add/edit operations
+- ✅ Built vehicle CRUD utility functions (lib/vehicles.ts)
+- ✅ Added search and filter functionality for vehicles
+- ✅ Implemented status management (Available, On Trip, In Shop, Suspended)
+- ✅ Added retired vehicle toggle functionality
+- ✅ Created responsive data table with actions
+
+**Files Created:**
+- `/fleetflow/components/DashboardLayout.tsx` - Sidebar navigation with user menu
+- `/fleetflow/components/VehicleModal.tsx` - Add/Edit vehicle form modal
+- `/fleetflow/lib/vehicles.ts` - Vehicle CRUD operations (getVehicles, createVehicle, updateVehicle, deleteVehicle, retireVehicle)
+- `/fleetflow/app/dashboard/vehicles/page.tsx` - Vehicle Registry page with table
+
+**Files Modified:**
+- `/fleetflow/app/page.tsx` - Updated button text to "Get Started"
+- `/fleetflow/app/dashboard/page.tsx` - Rebuilt with stats grid and quick actions
+
+**Features Implemented:**
+
+**Dashboard Layout:**
+- Collapsible sidebar with 7 navigation items
+- User profile section with avatar and logout
+- Mobile-responsive hamburger menu
+- Active route highlighting with purple color
+- Smooth transitions and animations
+
+**Vehicle Registry:**
+- Full CRUD operations (Create, Read, Update, Delete)
+- Data table with sortable columns
+- Search by registration or vehicle type
+- Filter to show/hide retired vehicles
+- Status pills with color coding
+- Edit and delete actions per row
+- Statistics cards (Total, Available, On Trip, In Shop)
+- Empty state with CTA to add first vehicle
+
+**Vehicle Modal:**
+- Form validation for all required fields
+- Unique registration number check
+- Max capacity validation (> 0)
+- Status dropdown (Available, On Trip, In Shop, Suspended)
+- Retired checkbox
+- Error handling with descriptive messages
+- Loading states during save operations
+
+**Business Logic Implemented:**
+- Registration uniqueness validation
+- Capacity constraints (must be > 0)
+- Retired vehicles excluded from active operations by default
+- Status management for operational tracking
+- Soft delete via "retired" flag (preserves data)
+
+**UI/UX Highlights:**
+- Consistent brand purple (#714b67) throughout
+- Status pills match design system
+- Responsive table with horizontal scroll
+- Modal overlay with backdrop blur
+- Form inputs with purple focus rings
+- Hover states on all interactive elements
+
+**Next Steps:**
+- Phase 2B: Build Driver Profiles page (CRUD operations)
+- Phase 2B: Implement license expiry validation
+- Phase 2B: Add role-based access control (RBAC)
+- Phase 3: Build Trip Dispatcher with validation
+- Phase 3: Build Service Log with auto-status updates
+
+**Notes:**
+- All CRUD operations persist to PGLite database
+- Vehicle registry fully functional and ready for use
+- Database queries optimized with proper indexing
+- TypeScript interfaces ensure type safety
+- Component structure follows Next.js 15 best practices
+
+---
+
 ## 📝 Change Log
 
 ### Session 1 - February 21, 2026

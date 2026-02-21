@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Plus, Search, Edit2, Trash2, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, AlertTriangle, CheckCircle, Clock, Download } from 'lucide-react';
 import { getDrivers, deleteDriver, checkLicenseStatus, type Driver } from '@/lib/drivers';
 import DriverModal from '@/components/DriverModal';
+import { exportDriversCSV } from '@/lib/export';
 
 /**
  * Driver Profiles Page
@@ -119,14 +120,24 @@ export default function DriversPage() {
             <h1 className="text-3xl font-bold text-gray-900">Driver Profiles</h1>
             <p className="text-gray-600 mt-1">Manage drivers and track license compliance</p>
           </div>
-          <button
-            onClick={handleAddNew}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors"
-            style={{ backgroundColor: '#714b67' }}
-          >
-            <Plus className="w-5 h-5" />
-            Add Driver
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => exportDriversCSV(filteredDrivers)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              title="Export to CSV"
+            >
+              <Download className="w-5 h-5 text-gray-600" />
+              <span className="text-gray-700 font-medium">Export</span>
+            </button>
+            <button
+              onClick={handleAddNew}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors"
+              style={{ backgroundColor: '#714b67' }}
+            >
+              <Plus className="w-5 h-5" />
+              Add Driver
+            </button>
+          </div>
         </div>
 
         {/* Compliance Warnings */}

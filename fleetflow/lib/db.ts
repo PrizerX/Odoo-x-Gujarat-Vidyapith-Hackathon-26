@@ -44,7 +44,7 @@ export async function getDB(): Promise<PGlite> {
       name VARCHAR(255) NOT NULL,
       license_number VARCHAR(100) UNIQUE NOT NULL,
       license_expiry DATE NOT NULL,
-      status VARCHAR(50) DEFAULT 'Available',
+      status VARCHAR(50) DEFAULT 'Available' CHECK (status IN ('Available', 'On Trip', 'On Leave', 'Suspended')),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);

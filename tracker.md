@@ -56,6 +56,186 @@ FleetFlow is an offline-first logistics ERP system that replaces manual logbooks
 
 ---
 
+### Session 3 - February 21, 2026
+
+#### 🚗 Phase 2B: Asset & Human Registry - Driver Profiles
+**Time:** Continuation  
+**Status:** Completed  
+
+**Tasks Completed:**
+- ✅ Created driver CRUD utility functions (lib/drivers.ts)
+- ✅ Built comprehensive Driver Profiles page with compliance tracking
+- ✅ Created DriverModal component for add/edit operations
+- ✅ Implemented license expiry checking logic (expired, expiring, valid)
+- ✅ Added visual warnings for expired and expiring licenses
+- ✅ Implemented strict validation rules for trip assignment
+- ✅ Added compliance alerts at top of driver list
+- ✅ Created statistics cards for driver status tracking
+- ✅ Implemented search functionality by name and license number
+
+**Files Created:**
+- `/fleetflow/lib/drivers.ts` - Driver CRUD and compliance functions
+- `/fleetflow/components/DriverModal.tsx` - Add/Edit driver form with validation
+- `/fleetflow/app/dashboard/drivers/page.tsx` - Driver Profiles page with compliance tracking
+
+**Features Implemented:**
+
+**Driver CRUD Operations:**
+- `getDrivers()` - Fetch all drivers with optional status filter
+- `createDriver()` - Add new driver with unique license validation
+- `updateDriver()` - Edit existing driver
+- `deleteDriver()` - Delete driver (blocks if has trips)
+- `checkLicenseStatus()` - Returns expired/expiring/valid status
+- `getAvailableDrivers()` - Get only drivers with valid licenses
+- `canAssignDriver()` - Strict validation for trip assignment
+
+**License Compliance Tracking:**
+- Visual badges for license status (expired/expiring/valid)
+- Red warning for expired licenses (blocks trip assignment)
+- Amber warning for licenses expiring within 30 days
+- Green indicator for valid licenses
+- Compliance alerts at top of page
+- Row highlighting for expired licenses (red background)
+
+**Driver Modal:**
+- Date picker with minimum date validation (today)
+- Prevents adding drivers with expired licenses
+- Warning message for licenses expiring within 30 days
+- Unique license number validation
+- Status dropdown (Available, On Trip, On Leave, Suspended)
+- Form validation with descriptive error messages
+
+**Business Logic Implemented:**
+- **Strict Rule:** Expired license blocks trip assignment
+- License expiry calculated dynamically
+- "Expiring soon" threshold: 30 days
+- Cannot delete driver with existing trips
+- License number uniqueness enforced
+- Future date required for license expiry
+
+**Driver Profiles Page:**
+- Full data table with name, license, expiry status, and actions
+- Search by name or license number
+- Compliance alerts (expired and expiring counts)
+- Statistics cards: Total, Available, Expiring Soon, Expired
+- Edit and delete actions per row
+- Empty state with CTA to add first driver
+- Responsive design with color-coded indicators
+
+**UI/UX Highlights:**
+- Consistent brand purple (#714b67) throughout
+- Color-coded license status:
+  - 🔴 Red for expired (with AlertTriangle icon)
+  - 🟡 Amber for expiring (with Clock icon)
+  - 🟢 Green for valid (with CheckCircle icon)
+- Compliance alerts with actionable messages
+- Responsive table with horizontal scroll
+- Form inputs with purple focus rings
+- Loading and empty states
+
+**Next Steps:**
+- Phase 3A: Build Trip Dispatcher with validation logic
+- Phase 3A: Implement cargo weight vs vehicle capacity check
+- Phase 3A: Enforce driver license expiry check
+- Phase 3B: Build Service Log with auto-status updates
+- Phase 4: Build Expense Tracker and Analytics Hub
+
+**Notes:**
+- All driver operations persist to PGLite database
+- License compliance fully functional and enforced
+- Driver-trip relationship prevents accidental deletions
+- TypeScript interfaces ensure type safety
+- Strict business rules ready for trip dispatcher integration
+
+---
+
+### Session 2 - February 21, 2026
+
+#### 🏗️ Phase 2: Asset & Human Registry - Vehicle Registry
+**Time:** Continuation  
+**Status:** Completed  
+
+**Tasks Completed:**
+- ✅ Fixed landing page button text ("Start Free Trial" → "Get Started")
+- ✅ Created DashboardLayout component with responsive sidebar navigation
+- ✅ Built comprehensive dashboard home page with stats and quick actions
+- ✅ Implemented Vehicle Registry page with full CRUD functionality
+- ✅ Created VehicleModal component for add/edit operations
+- ✅ Built vehicle CRUD utility functions (lib/vehicles.ts)
+- ✅ Added search and filter functionality for vehicles
+- ✅ Implemented status management (Available, On Trip, In Shop, Suspended)
+- ✅ Added retired vehicle toggle functionality
+- ✅ Created responsive data table with actions
+
+**Files Created:**
+- `/fleetflow/components/DashboardLayout.tsx` - Sidebar navigation with user menu
+- `/fleetflow/components/VehicleModal.tsx` - Add/Edit vehicle form modal
+- `/fleetflow/lib/vehicles.ts` - Vehicle CRUD operations (getVehicles, createVehicle, updateVehicle, deleteVehicle, retireVehicle)
+- `/fleetflow/app/dashboard/vehicles/page.tsx` - Vehicle Registry page with table
+
+**Files Modified:**
+- `/fleetflow/app/page.tsx` - Updated button text to "Get Started"
+- `/fleetflow/app/dashboard/page.tsx` - Rebuilt with stats grid and quick actions
+
+**Features Implemented:**
+
+**Dashboard Layout:**
+- Collapsible sidebar with 7 navigation items
+- User profile section with avatar and logout
+- Mobile-responsive hamburger menu
+- Active route highlighting with purple color
+- Smooth transitions and animations
+
+**Vehicle Registry:**
+- Full CRUD operations (Create, Read, Update, Delete)
+- Data table with sortable columns
+- Search by registration or vehicle type
+- Filter to show/hide retired vehicles
+- Status pills with color coding
+- Edit and delete actions per row
+- Statistics cards (Total, Available, On Trip, In Shop)
+- Empty state with CTA to add first vehicle
+
+**Vehicle Modal:**
+- Form validation for all required fields
+- Unique registration number check
+- Max capacity validation (> 0)
+- Status dropdown (Available, On Trip, In Shop, Suspended)
+- Retired checkbox
+- Error handling with descriptive messages
+- Loading states during save operations
+
+**Business Logic Implemented:**
+- Registration uniqueness validation
+- Capacity constraints (must be > 0)
+- Retired vehicles excluded from active operations by default
+- Status management for operational tracking
+- Soft delete via "retired" flag (preserves data)
+
+**UI/UX Highlights:**
+- Consistent brand purple (#714b67) throughout
+- Status pills match design system
+- Responsive table with horizontal scroll
+- Modal overlay with backdrop blur
+- Form inputs with purple focus rings
+- Hover states on all interactive elements
+
+**Next Steps:**
+- Phase 2B: Build Driver Profiles page (CRUD operations)
+- Phase 2B: Implement license expiry validation
+- Phase 2B: Add role-based access control (RBAC)
+- Phase 3: Build Trip Dispatcher with validation
+- Phase 3: Build Service Log with auto-status updates
+
+**Notes:**
+- All CRUD operations persist to PGLite database
+- Vehicle registry fully functional and ready for use
+- Database queries optimized with proper indexing
+- TypeScript interfaces ensure type safety
+- Component structure follows Next.js 15 best practices
+
+---
+
 ## 📝 Change Log
 
 ### Session 1 - February 21, 2026

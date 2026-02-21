@@ -51,7 +51,7 @@ export default function Home() {
               className="px-8 py-4 rounded-lg text-white font-semibold text-lg transition-transform hover:scale-105"
               style={{ backgroundColor: '#714b67' }}
             >
-              Start Free Trial
+              Get Started
             </Link>
             <Link
               href="/login"
@@ -155,7 +155,7 @@ export default function Home() {
             className="inline-block px-8 py-4 bg-white rounded-lg font-semibold text-lg transition-transform hover:scale-105"
             style={{ color: '#714b67' }}
           >
-            Get Started Now
+            Get Started
           </Link>
         </div>
       </section>

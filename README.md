@@ -1,7 +1,13 @@
+
+<img width="3204" height="573" alt="Frame_37" src="https://github.com/user-attachments/assets/db5c4b2d-0c9f-4064-a878-0abec2734598" />
+
 # FleetFlow - Odoo x Gujarat Vidyapith Hackathon '26
 
 > **Modular Fleet & Logistics Management System**  
 > An offline-first logistics ERP that replaces manual logbooks with strict business logic.
+
+<img width="1462" height="1098" alt="image" src="https://github.com/user-attachments/assets/0dfb0583-ebb3-4221-8c69-266ccbe6ded0" />
+
 
 ## 🏆 Hackathon Project
 
@@ -89,11 +95,11 @@ FleetFlow is a comprehensive fleet management solution designed to eliminate man
 - [x] Fleet performance overview
 - [x] Distance and revenue tracking per trip
 
-### Phase 5: Final Polish � NEXT
-- [ ] Command Center dashboard
-- [ ] PWA configuration
-- [ ] CSV export functionality
-- [ ] Final testing and optimization
+### Phase 5: Final Polish ✅ COMPLETE
+- [x] Command Center dashboard
+- [x] PWA configuration
+- [x] CSV export functionality
+- [x] Final testing and optimization
 
 ---
 

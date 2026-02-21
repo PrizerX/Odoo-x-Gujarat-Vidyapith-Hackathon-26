@@ -37,7 +37,7 @@ export async function calculateFuelEfficiency(): Promise<FuelEfficiencyData[]> {
       COALESCE(SUM(t.distance), 0) as total_distance,
       COALESCE(SUM(CASE WHEN e.type = 'fuel' THEN e.amount ELSE 0 END), 0) as total_fuel_cost
     FROM vehicles v
-    LEFT JOIN trips t ON v.id = t.vehicle_id AND t.status = 'completed'
+    LEFT JOIN trips t ON v.id = t.vehicle_id AND t.status = 'Completed'
     LEFT JOIN expenses e ON v.id = e.vehicle_id
     WHERE v.retired = false
     GROUP BY v.id, v.registration, v.type
@@ -81,7 +81,7 @@ export async function calculateVehicleROI(): Promise<VehicleROI[]> {
       COALESCE(SUM(t.revenue), 0) as total_revenue,
       COALESCE(SUM(e.amount), 0) as total_expenses
     FROM vehicles v
-    LEFT JOIN trips t ON v.id = t.vehicle_id AND t.status = 'completed'
+    LEFT JOIN trips t ON v.id = t.vehicle_id AND t.status = 'Completed'
     LEFT JOIN expenses e ON v.id = e.vehicle_id
     WHERE v.retired = false
     GROUP BY v.id, v.registration, v.type

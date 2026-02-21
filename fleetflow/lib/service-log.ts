@@ -181,6 +181,14 @@ export async function updateServiceLog(
       values
     );
 
+    // If status is changed to 'Resolved', update vehicle status to 'Available'
+    if (logData.status === 'Resolved') {
+      await db.query(
+        'UPDATE vehicles SET status = $1 WHERE id = $2',
+        ['Available', currentLog.vehicle_id]
+      );
+    }
+
     return { success: true, message: 'Service log updated successfully' };
   } catch (error) {
     console.error('Error updating service log:', error);

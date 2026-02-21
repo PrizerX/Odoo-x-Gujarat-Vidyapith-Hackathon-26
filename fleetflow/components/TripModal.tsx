@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, AlertCircle, Truck, User, Package, MapPin, Calendar } from 'lucide-react';
 import { createTrip, updateTrip, type Trip, type TripInput } from '@/lib/trips';
 import { getVehicles, type Vehicle } from '@/lib/vehicles';
-import { getAvailableDrivers, type Driver } from '@/lib/drivers';
+import { getAvailableDrivers, getDrivers, type Driver } from '@/lib/drivers';
 
 interface TripModalProps {
   trip: Trip | null;
@@ -60,11 +60,28 @@ export default function TripModal({ trip, onClose, onSave }: TripModalProps) {
   const loadAvailableResources = async () => {
     // Get only available vehicles (not retired, status = Available)
     const allVehicles = await getVehicles(false);
-    const available = allVehicles.filter(v => v.status === 'Available');
+    let available = allVehicles.filter(v => v.status === 'Available');
+    
+    // If editing, include the current trip's vehicle even if not available
+    if (trip && trip.vehicle_id) {
+      const currentVehicle = allVehicles.find(v => v.id === trip.vehicle_id);
+      if (currentVehicle && !available.find(v => v.id === currentVehicle.id)) {
+        available = [...available, currentVehicle];
+      }
+    }
     setAvailableVehicles(available);
 
     // Get only drivers with valid (non-expired) licenses
-    const drivers = await getAvailableDrivers();
+    let drivers = await getAvailableDrivers();
+    
+    // If editing, include the current trip's driver even if not available
+    if (trip && trip.driver_id) {
+      const allDrivers = await getDrivers();
+      const currentDriver = allDrivers.find(d => d.id === trip.driver_id);
+      if (currentDriver && !drivers.find(d => d.id === currentDriver.id)) {
+        drivers = [...drivers, currentDriver];
+      }
+    }
     setAvailableDrivers(drivers);
   };
 

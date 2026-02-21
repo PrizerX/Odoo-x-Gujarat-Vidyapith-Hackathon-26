@@ -1,161 +1,118 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, AlertCircle, DollarSign, Calendar, FileText } from 'lucide-react';
-import { createExpense, updateExpense, type Expense, type ExpenseInput } from '@/lib/expenses';
-import { getVehicles, type Vehicle } from '@/lib/vehicles';
+import { X } from 'lucide-react';
+import { type Expense } from '@/lib/expenses';
+import { getVehicles } from '@/lib/vehicles';
 
 interface ExpenseModalProps {
-  expense: Expense | null;
+  isOpen: boolean;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (expense: Omit<Expense, 'id' | 'created_at' | 'vehicle_registration' | 'vehicle_type'>) => Promise<void>;
+  expense?: Expense;
 }
 
-/**
- * Expense Modal Component
- * Form modal for logging fuel and maintenance expenses against vehicles.
- * Tracks costs for ROI and fuel efficiency calculations.
- */
-export default function ExpenseModal({ expense, onClose, onSave }: ExpenseModalProps) {
-  const [formData, setFormData] = useState<ExpenseInput>({
-    vehicle_id: 0,
-    type: 'Fuel',
-    amount: 0,
-    date: new Date().toISOString().split('T')[0],
-    description: '',
+export default function ExpenseModal({ isOpen, onClose, onSave, expense }: ExpenseModalProps) {
+  const [formData, setFormData] = useState({
+    vehicle_id: expense?.vehicle_id || 0,
+    type: expense?.type || 'fuel' as const,
+    amount: expense?.amount || 0,
+    date: expense?.date ? new Date(expense.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    description: expense?.description || '',
   });
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [error, setError] = useState('');
+  const [vehicles, setVehicles] = useState<Array<{ id: number; registration: string; type: string }>>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadVehicles();
-  }, []);
-
-  useEffect(() => {
-    if (expense) {
-      setFormData({
-        vehicle_id: expense.vehicle_id,
-        type: expense.type,
-        amount: expense.amount,
-        date: expense.date.split('T')[0],
-        description: expense.description || '',
-      });
+    if (isOpen) {
+      loadVehicles();
+      if (expense) {
+        setFormData({
+          vehicle_id: expense.vehicle_id,
+          type: expense.type,
+          amount: expense.amount,
+          date: expense.date instanceof Date
+            ? expense.date.toISOString().split('T')[0]
+            : new Date(expense.date).toISOString().split('T')[0],
+          description: expense.description,
+        });
+      } else {
+        setFormData({
+          vehicle_id: 0,
+          type: 'fuel',
+          amount: 0,
+          date: new Date().toISOString().split('T')[0],
+          description: '',
+        });
+      }
     }
-  }, [expense]);
+  }, [isOpen, expense]);
 
   const loadVehicles = async () => {
-    // Get all non-retired vehicles
-    const allVehicles = await getVehicles(false);
-    setVehicles(allVehicles);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'vehicle_id') {
-      setFormData({ ...formData, [name]: parseInt(value) });
-    } else if (name === 'amount') {
-      setFormData({ ...formData, [name]: parseFloat(value) || 0 });
-    } else {
-      setFormData({ ...formData, [name]: value });
+    try {
+      const allVehicles = await getVehicles();
+      setVehicles(allVehicles.filter(v => !v.retired));
+    } catch (error) {
+      console.error('Failed to load vehicles:', error);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-
-    // Validation
-    if (!formData.vehicle_id || formData.vehicle_id === 0) {
-      setError('Please select a vehicle');
-      return;
-    }
-
-    if (!formData.type) {
-      setError('Please select expense type');
-      return;
-    }
-
-    if (!formData.amount || formData.amount <= 0) {
-      setError('Amount must be greater than 0');
-      return;
-    }
-
-    if (!formData.date) {
-      setError('Date is required');
+    
+    if (!formData.vehicle_id || formData.amount <= 0) {
+      alert('Please fill all required fields');
       return;
     }
 
     setLoading(true);
-
     try {
-      let result;
-      if (expense) {
-        // Update existing expense
-        result = await updateExpense(expense.id, formData);
-      } else {
-        // Create new expense
-        result = await createExpense(formData);
-      }
-
-      if (result.success) {
-        onSave();
-        onClose();
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
+      await onSave({
+        vehicle_id: formData.vehicle_id,
+        type: formData.type,
+        amount: formData.amount,
+        date: new Date(formData.date),
+        description: formData.description,
+      });
+      onClose();
+    } catch (error) {
+      console.error('Failed to save expense:', error);
+      alert('Failed to save expense');
     } finally {
       setLoading(false);
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-6 h-6" style={{ color: '#714b67' }} />
-            <h2 className="text-xl font-bold text-gray-900">
-              {expense ? 'Edit Expense' : 'Log New Expense'}
-            </h2>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {expense ? 'Edit Expense' : 'Log New Expense'}
+          </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-              <span className="text-sm">{error}</span>
-            </div>
-          )}
-
-          {/* Vehicle Selection */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label htmlFor="vehicle_id" className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Vehicle *
             </label>
             <select
-              id="vehicle_id"
-              name="vehicle_id"
               value={formData.vehicle_id}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, vehicle_id: parseInt(e.target.value) })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-              style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
             >
-              <option value={0}>Select a vehicle...</option>
-              {vehicles.map((vehicle) => (
+              <option value={0}>Select a vehicle</option>
+              {vehicles.map(vehicle => (
                 <option key={vehicle.id} value={vehicle.id}>
                   {vehicle.registration} - {vehicle.type}
                 </option>
@@ -163,99 +120,77 @@ export default function ExpenseModal({ expense, onClose, onSave }: ExpenseModalP
             </select>
           </div>
 
-          {/* Expense Type */}
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Expense Type *
             </label>
             <select
-              id="type"
-              name="type"
               value={formData.type}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as typeof formData.type })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-              style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
             >
-              <option value="Fuel">Fuel</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Insurance">Insurance</option>
-              <option value="Registration">Registration</option>
-              <option value="Repairs">Repairs</option>
-              <option value="Other">Other</option>
+              <option value="fuel">Fuel</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="repair">Repair</option>
+              <option value="insurance">Insurance</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
-          {/* Amount */}
           <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-              <DollarSign className="w-4 h-4 inline mr-1" />
-              Amount ($) *
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Amount (₹) *
             </label>
             <input
               type="number"
-              id="amount"
-              name="amount"
-              value={formData.amount || ''}
-              onChange={handleChange}
-              required
-              min="0.01"
+              value={formData.amount}
+              onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              min="0"
               step="0.01"
-              placeholder="e.g., 150.00"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-              style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
+              required
             />
           </div>
 
-          {/* Date */}
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-              <Calendar className="w-4 h-4 inline mr-1" />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Date *
             </label>
             <input
               type="date"
-              id="date"
-              name="date"
               value={formData.date}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-              style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
             />
           </div>
 
-          {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              <FileText className="w-4 h-4 inline mr-1" />
-              Description (Optional)
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
             </label>
             <textarea
-              id="description"
-              name="description"
               value={formData.description}
-              onChange={handleChange}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               rows={3}
-              placeholder="Add notes about this expense..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-              style={{ '--tw-ring-color': '#714b67' } as React.CSSProperties}
+              placeholder="Additional details..."
             />
           </div>
 
-          {/* Buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg text-white font-medium transition-colors disabled:opacity-50"
               style={{ backgroundColor: '#714b67' }}
             >
               {loading ? 'Saving...' : expense ? 'Update Expense' : 'Log Expense'}

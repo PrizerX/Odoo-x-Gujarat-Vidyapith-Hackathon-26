@@ -1,338 +1,324 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, DollarSign, Fuel, Activity, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Download, DollarSign, Activity } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
-import {
-  getFleetPerformance,
-  calculateFuelEfficiency,
-  calculateVehicleROI,
-  getExpenseBreakdown,
-  type FleetPerformance,
-  type FuelEfficiency,
-  type VehicleROI,
-  type ExpenseBreakdown,
-} from '@/lib/analytics';
+import { calculateFuelEfficiency, calculateVehicleROI, getFleetPerformance, type FuelEfficiencyData, type VehicleROI } from '@/lib/analytics';
+import { exportFuelEfficiencyCSV, exportROICSV } from '@/lib/export';
 
-/**
- * Analytics Hub
- * Performance metrics, fuel efficiency, and ROI calculations for fleet optimization.
- * Data-driven insights for cost reduction and operational excellence.
- */
 export default function AnalyticsPage() {
-  const [loading, setLoading] = useState(true);
-  const [fleetPerformance, setFleetPerformance] = useState<FleetPerformance | null>(null);
-  const [fuelEfficiency, setFuelEfficiency] = useState<FuelEfficiency[]>([]);
+  const [fuelEfficiency, setFuelEfficiency] = useState<FuelEfficiencyData[]>([]);
   const [vehicleROI, setVehicleROI] = useState<VehicleROI[]>([]);
-  const [expenseBreakdown, setExpenseBreakdown] = useState<ExpenseBreakdown[]>([]);
+  const [performance, setPerformance] = useState({
+    totalRevenue: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    avgROI: 0,
+    avgFuelEfficiency: 0,
+    totalTripsCompleted: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'fuel' | 'roi'>('roi');
 
   useEffect(() => {
     loadAnalytics();
   }, []);
 
   const loadAnalytics = async () => {
-    setLoading(true);
-    const [performance, efficiency, roi, breakdown] = await Promise.all([
-      getFleetPerformance(),
-      calculateFuelEfficiency(),
-      calculateVehicleROI(),
-      getExpenseBreakdown(),
-    ]);
-
-    setFleetPerformance(performance);
-    setFuelEfficiency(efficiency);
-    setVehicleROI(roi);
-    setExpenseBreakdown(breakdown);
-    setLoading(false);
+    try {
+      const [fuelData, roiData, perfData] = await Promise.all([
+        calculateFuelEfficiency(),
+        calculateVehicleROI(),
+        getFleetPerformance(),
+      ]);
+      setFuelEfficiency(fuelData);
+      setVehicleROI(roiData);
+      setPerformance(perfData);
+    } catch (error) {
+      console.error('Failed to load analytics:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getROIColor = (roi: number) => {
-    if (roi >= 50) return 'text-green-600';
-    if (roi >= 20) return 'text-blue-600';
-    if (roi >= 0) return 'text-gray-600';
-    return 'text-red-600';
-  };
-
-  const getROIBackground = (roi: number) => {
-    if (roi >= 50) return 'bg-green-50';
-    if (roi >= 20) return 'bg-blue-50';
-    if (roi >= 0) return 'bg-gray-50';
-    return 'bg-red-50';
-  };
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-600">Loading analytics...</div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Hub</h1>
-          <p className="text-gray-600 mt-1">Performance metrics and fleet optimization insights</p>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Analytics Hub</h1>
+            <p className="text-gray-600 mt-1">Fleet performance metrics and insights</p>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#714b67' }}>
-              <BarChart3 className="w-6 h-6 text-white animate-pulse" />
+        {/* Performance Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Revenue</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  ₹{performance.totalRevenue.toLocaleString()}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-green-100">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
             </div>
-            <p className="text-gray-600">Loading analytics...</p>
           </div>
-        ) : (
-          <>
-            {/* Fleet Performance Overview */}
-            {fleetPerformance && (
-              <>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Fleet Performance</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-white rounded-lg shadow p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity className="w-5 h-5 text-blue-600" />
-                      <p className="text-sm font-medium text-gray-600">Active Vehicles</p>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {fleetPerformance.active_vehicles}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {fleetPerformance.vehicles_on_trip} on trip, {fleetPerformance.vehicles_in_shop} in shop
-                    </p>
-                  </div>
 
-                  <div className="bg-white rounded-lg shadow p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Target className="w-5 h-5 text-green-600" />
-                      <p className="text-sm font-medium text-gray-600">Trips Completed</p>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {fleetPerformance.completed_trips}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {fleetPerformance.in_progress_trips} in progress, {fleetPerformance.pending_trips} pending
-                    </p>
-                  </div>
-
-                  <div className="bg-white rounded-lg shadow p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5 h-5 text-purple-600" />
-                      <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    </div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      ${fleetPerformance.total_revenue.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      ${fleetPerformance.total_expenses.toFixed(2)} expenses
-                    </p>
-                  </div>
-
-                  <div className={`rounded-lg shadow p-4 ${getROIBackground(fleetPerformance.fleet_roi)}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className={`w-5 h-5 ${getROIColor(fleetPerformance.fleet_roi)}`} />
-                      <p className="text-sm font-medium text-gray-600">Fleet ROI</p>
-                    </div>
-                    <p className={`text-2xl font-bold ${getROIColor(fleetPerformance.fleet_roi)}`}>
-                      {fleetPerformance.fleet_roi.toFixed(1)}%
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      ${fleetPerformance.net_profit.toFixed(2)} net profit
-                    </p>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Fuel Efficiency */}
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Fuel Efficiency</h2>
-            <div className="bg-white rounded-lg shadow overflow-hidden mb-8">
-              {fuelEfficiency.length === 0 ? (
-                <div className="text-center py-12">
-                  <Fuel className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No fuel efficiency data available</p>
-                  <p className="text-sm text-gray-500 mt-2">Complete trips and log fuel expenses to see metrics</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Vehicle
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Distance (km)
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fuel (L)
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Efficiency (km/L)
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fuel Cost
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Cost/km
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {fuelEfficiency.map((vehicle) => (
-                        <tr key={vehicle.vehicle_id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {vehicle.vehicle_registration}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {vehicle.vehicle_type}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            {vehicle.total_distance.toFixed(1)}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            {vehicle.fuel_consumed.toFixed(1)}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-semibold text-blue-600">
-                              {vehicle.fuel_efficiency.toFixed(2)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            ${vehicle.total_fuel_cost.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            ${vehicle.cost_per_km.toFixed(3)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Expenses</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  ₹{performance.totalExpenses.toLocaleString()}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-red-100">
+                <TrendingDown className="w-6 h-6 text-red-600" />
+              </div>
             </div>
+          </div>
 
-            {/* Vehicle ROI */}
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Vehicle ROI Analysis</h2>
-            <div className="bg-white rounded-lg shadow overflow-hidden mb-8">
-              {vehicleROI.length === 0 ? (
-                <div className="text-center py-12">
-                  <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No ROI data available</p>
-                  <p className="text-sm text-gray-500 mt-2">Complete trips and log expenses to calculate ROI</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Net Profit</p>
+                <p className={`text-2xl font-bold mt-1 ${performance.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ₹{performance.netProfit.toLocaleString()}
+                </p>
+              </div>
+              <div className="p-3 rounded-lg" style={{ backgroundColor: '#f3f4f6' }}>
+                <DollarSign className="w-6 h-6" style={{ color: '#714b67' }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Avg Fuel Efficiency</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {performance.avgFuelEfficiency.toFixed(1)} km/L
+                </p>
+              </div>
+              <div className="p-3 rounded-lg bg-blue-100">
+                <Activity className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="border-b border-gray-200">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('roi')}
+                className={`flex-1 px-6 py-4 text-center font-medium transition-colors ${
+                  activeTab === 'roi'
+                    ? 'text-purple-600 border-b-2 border-purple-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Vehicle ROI
+              </button>
+              <button
+                onClick={() => setActiveTab('fuel')}
+                className={`flex-1 px-6 py-4 text-center font-medium transition-colors ${
+                  activeTab === 'fuel'
+                    ? 'text-purple-600 border-b-2 border-purple-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Fuel Efficiency
+              </button>
+            </div>
+          </div>
+
+          {/* ROI Tab */}
+          {activeTab === 'roi' && (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Return on Investment by Vehicle</h3>
+                <button
+                  onClick={() => exportROICSV(vehicleROI)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                  title="Export to CSV"
+                >
+                  <Download className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700 font-medium">Export</span>
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Vehicle
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Trips
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Revenue
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Expenses
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Net Profit
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ROI
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Avg Revenue/Trip
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {vehicleROI.length === 0 ? (
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Vehicle
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Trips
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Revenue
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Expenses
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Profit
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          ROI
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Avg/Trip
-                        </th>
+                        <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                          No ROI data available. Complete some trips to see analytics!
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {vehicleROI.map((vehicle) => (
+                    ) : (
+                      vehicleROI.map((vehicle) => (
                         <tr key={vehicle.vehicle_id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {vehicle.vehicle_registration}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {vehicle.vehicle_type}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{vehicle.vehicle_registration}</div>
+                              <div className="text-sm text-gray-500">{vehicle.vehicle_type}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            {vehicle.trips_completed}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{vehicle.trips_completed}</div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-green-600 font-medium">
-                            ${vehicle.total_revenue.toFixed(2)}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-bold text-green-600">
+                              ₹{vehicle.total_revenue.toLocaleString()}
+                            </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-red-600 font-medium">
-                            ${vehicle.total_expenses.toFixed(2)}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-bold text-red-600">
+                              ₹{vehicle.total_expenses.toLocaleString()}
+                            </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`text-sm font-semibold ${vehicle.net_profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ${vehicle.net_profit.toFixed(2)}
-                            </span>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`text-sm font-bold ${vehicle.net_profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              ₹{vehicle.net_profit.toLocaleString()}
+                            </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getROIColor(vehicle.roi_percentage)} ${getROIBackground(vehicle.roi_percentage)}`}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`text-sm font-bold ${vehicle.roi_percentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                               {vehicle.roi_percentage.toFixed(1)}%
-                            </span>
+                            </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            ${vehicle.avg_revenue_per_trip.toFixed(2)}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">₹{vehicle.avg_revenue_per_trip.toLocaleString()}</div>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
+          )}
 
-            {/* Expense Breakdown */}
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Expense Breakdown</h2>
-            <div className="bg-white rounded-lg shadow p-6">
-              {expenseBreakdown.length === 0 ? (
-                <div className="text-center py-12">
-                  <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No expense data available</p>
-                  <p className="text-sm text-gray-500 mt-2">Log expenses to see breakdown</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {expenseBreakdown.map((category) => (
-                    <div key={category.type}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm font-medium text-gray-900">
-                            {category.type}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {category.count} transactions
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-sm font-semibold text-gray-900">
-                            ${category.total.toFixed(2)}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            {category.percentage.toFixed(1)}%
-                          </div>
-                        </div>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full"
-                          style={{
-                            width: `${category.percentage}%`,
-                            backgroundColor: '#714b67',
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* Fuel Efficiency Tab */}
+          {activeTab === 'fuel' && (
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Fuel Efficiency by Vehicle</h3>
+                <button
+                  onClick={() => exportFuelEfficiencyCSV(fuelEfficiency)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                  title="Export to CSV"
+                >
+                  <Download className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700 font-medium">Export</span>
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Vehicle
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total Distance
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Fuel Consumed
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Efficiency
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Fuel Cost
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cost/km
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {fuelEfficiency.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                          No fuel efficiency data available. Complete some trips with fuel expenses!
+                        </td>
+                      </tr>
+                    ) : (
+                      fuelEfficiency.map((vehicle) => (
+                        <tr key={vehicle.vehicle_id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{vehicle.vehicle_registration}</div>
+                              <div className="text-sm text-gray-500">{vehicle.vehicle_type}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{vehicle.total_distance.toLocaleString()} km</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">{vehicle.fuel_consumed.toFixed(1)} L</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-bold text-blue-600">
+                              {vehicle.fuel_efficiency.toFixed(1)} km/L
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">₹{vehicle.total_fuel_cost.toLocaleString()}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">₹{vehicle.cost_per_km.toFixed(2)}</div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );
